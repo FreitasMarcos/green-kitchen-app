@@ -1,0 +1,69 @@
+import React,{useState,useEffect, useContext} from 'react'
+import {View, Text, TouchableOpacity, Image, ScrollView, FlatList} from 'react-native'
+import styles from './styles/styles'
+
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamsList } from '../routes/route';
+import { api } from '../../api/greenKitchen';
+
+type DetailsRecipes = NativeStackNavigationProp<RootStackParamsList, 'DetailsRecipes'>
+
+
+export function Home(){
+
+    interface Recipes {
+        title: string, 
+        stateId: number, 
+        amount: number, 
+        categories: string, 
+        UserId: number, 
+        description: string, 
+        time: Date, 
+        id: number
+    }
+
+    const [recipes, setRecipes] = useState<Recipes[]>([]);
+    const navigation = useNavigation<DetailsRecipes>();
+
+    async function getRecipe() {
+        await api.get('recipes/get')
+        .then((r)=>{
+            setRecipes(r.data)
+        })
+        .catch((e)=>{
+            console.log(e.response)
+        })
+    }
+
+    useEffect(() => {
+        getRecipe()
+        const interval = setInterval(() => {
+           getRecipe()
+        }, 500);
+        return () => clearInterval(interval)
+    }, [])
+    return(
+        <View style={styles.containerScree}>
+            <FlatList
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+                data={recipes}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => {
+                    return <TouchableOpacity style={styles.containerCard} onPress={()=> navigation.navigate('DetailsRecipes' as never, { item } as never)}>
+                                <Image source={require(`../../assets/images/recipes/Doces.jpg`)} style={styles.image}/>
+                                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                                    <View style={styles.lineLeft} />
+                                    <Text style={styles.categorie}>{item.categories[0].name}</Text>
+                                    <View style={styles.lineRight} />
+                                </View>
+                                <View style={styles.containerRecipe}>
+                                    <Text style={styles.recipe}>{item.title}</Text>
+                                </View>
+                            </TouchableOpacity>
+            }}
+            />
+        </View>
+    )
+}
