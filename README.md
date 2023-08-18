@@ -1,2 +1,2 @@
 # green-kitchen-app
-Projeto feito em React Native para faculdade
+Projeto em React Native no 7° periodo para atender uma demanda da faculdade
